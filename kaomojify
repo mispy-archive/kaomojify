@@ -1,0 +1,143 @@
+#!/usr/bin/env ruby
+# coding: utf-8
+
+require 'bishop'
+require 'twitter'
+require 'twitter_ebooks'
+
+require_relative 'config'
+
+def log(*args)
+  STDERR.puts args.map(&:to_s).join(' ')
+  STDERR.flush
+end
+
+module Kaomojify
+  class Updater
+    def initialize
+      @emotions = []
+
+      Twitter.configure do |config|
+        config.consumer_key = Config::CONSUMER_KEY
+        config.consumer_secret = Config::CONSUMER_SECRET
+        config.oauth_token = Config::OAUTH_TOKEN
+        config.oauth_token_secret = Config::OAUTH_TOKEN_SECRET
+      end 
+
+      @client = Twitter::Client.new
+
+      @archive = Ebooks::Archive.new(Config::USERNAME, Config::PATH_CORPUS, @client)
+    end
+
+    def sync
+      @archive.sync
+    end
+
+    # Builds a Bayes classifier and trains it on PATH_EMOTIONS
+    def make_classifier
+      log "Training classifier against #{Config::PATH_EMOTIONS}"
+      @classifier = Bishop::Bayes.new { |probs,ignore| Bishop::robinson( probs, ignore ) }
+
+      File.read(Config::PATH_EMOTIONS).lines do |l|
+        emotion, text = l.split("\t")
+        @emotions << emotion unless @emotions.include?(emotion)
+        @classifier.train(emotion, text)
+      end
+
+      @classifier
+    end
+
+    # Classify lines of text according to emotions
+    def classify(tweets)
+      stats = {}
+      stats[:total] = 0
+      @emotions.each do |emotion|
+        stats[emotion] = 0.0
+      end
+
+      tweets.each do |tweet|
+        line = Ebooks::NLP.normalize(tweet[:text])
+        next if line.start_with?('RT') # Ignore retweets
+        scores = @classifier.guess(line).sort do |x,y|
+          y[1] <=> x[1]
+        end
+        #puts "#{scores[0][0]}: #{line}" if scores.length > 0
+        scores.each do |score|
+          stats[score[0]] += score[1]
+          stats[:total] += score[1]
+        end
+      end
+
+      @emotions.each do |emotion|
+        stats[emotion] = stats[emotion]/stats[:total].to_f
+      end
+
+      stats
+    end
+
+    def kaomoji
+      # Classify the entire archive so we have a reference against which to measure
+      log "Classifying tweets"
+      tweets = @archive.tweets
+      overall_stats = classify(tweets)
+
+      # Classify the last 100 tweets and compare them to norm
+      recent_tweets = tweets[0..99]
+      recent_stats = classify(recent_tweets)
+
+      if recent_stats[:total] == 0.0
+        log "Unable to classify any of the last #{recent_tweets.length} tweets. You might need more data in emotions.tsv"
+        log "Defaulting to: #{Config::KAOMOJI[:unknown]}"
+        return Config::KAOMOJI[:unknown]
+      end
+
+      pct_change = {}
+
+      p recent_stats
+      
+      @emotions.each do |emotion|
+        pct_change[emotion] = (recent_stats[emotion] - overall_stats[emotion])/recent_stats[emotion] * 100
+      end
+
+      # Find the most increased emotion vs. norm
+      best = pct_change.sort { |x,y| y[1] <=> x[1] }[0]
+
+      def ml(val)
+        if val < 0
+          "less"
+        else
+          "more"
+        end
+      end
+
+      log "Relative to #{tweets.length} total tweets, in the last #{recent_tweets.length} tweets #{Config::NAME} is:"
+      @emotions.each do |emotion|
+        log "\t#{pct_change[emotion].abs.round(2)}% #{ml(pct_change[emotion])} #{emotion}"
+      end
+
+      kaomoji = Config::KAOMOJI[best[0].to_sym]
+
+      if kaomoji.nil?
+        kaomoji = Config::KAOMOJI[:unknown]
+        log "Unfortunately, there's no kaomoji specified in config.rb for the emotion '#{best[0]}', so we're going with: #{kaomoji}"
+      else
+        log "We believe this is best represented by: #{Config::KAOMOJI[best[0].to_sym]}"
+      end
+
+      kaomoji
+    end
+
+    def run
+      name = "#{Config::NAME} #{self.kaomoji}"
+      log "Updating Twitter name to: #{name}"
+      @client.update_profile(name: name)
+    end
+  end
+end
+
+if __FILE__ == $0
+  updater = Kaomojify::Updater.new
+  updater.sync
+  updater.make_classifier
+  updater.run
+end

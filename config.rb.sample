@@ -1,0 +1,28 @@
+# coding: utf-8
+
+module Kaomojify
+  module Config
+    # Your Twitter app auth details from https://dev.twitter.com/
+    CONSUMER_KEY = ""
+    CONSUMER_SECRET = ""
+    OAUTH_TOKEN = ""
+    OAUTH_TOKEN_SECRET = ""
+
+    USERNAME = "m1sp" # Username of account to kaomojify
+    NAME = "Mispy" # Name to append kaomoji to
+
+    # Mapping of emotion names to kaomoji
+    KAOMOJI = {
+      happy: "(o^_^)o",
+      angry: "(；￣Д￣ )",
+      sad: "o(╥﹏╥)o",
+      neutral: "<( '.' )>",
+
+      unknown: "┗(･ω･;)┛"
+    }
+
+    PATH_ROOT = File.expand_path(File.dirname(__FILE__))
+    PATH_EMOTIONS = File.join(PATH_ROOT, "emotions.tsv")
+    PATH_CORPUS = File.join(PATH_ROOT, "#{USERNAME}.json")
+  end
+end
