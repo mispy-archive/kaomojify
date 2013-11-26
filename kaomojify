@@ -87,7 +87,7 @@ module Kaomojify
 
       if recent_stats[:total] == 0.0
         log "Unable to classify any of the last #{recent_tweets.length} tweets. You might need more data in emotions.tsv"
-        log "Defaulting to: #{Config::KAOMOJI[:unknown]}"
+        log "Defaulting to: unknown"
         return Config::KAOMOJI[:unknown]
       end
 
@@ -119,16 +119,18 @@ module Kaomojify
 
       if kaomoji.nil?
         kaomoji = Config::KAOMOJI[:unknown]
-        log "Unfortunately, there's no kaomoji specified in config.rb for the emotion '#{best[0]}', so we're going with: #{kaomoji}"
+        log "Unfortunately, there's no kaomoji specified in config.rb for the emotion '#{best[0]}', so we're going with: unknown"
       else
-        log "We believe this is best represented by: #{Config::KAOMOJI[best[0].to_sym]}"
+        log "We believe this is best represented by: #{best[0].to_sym}"
       end
 
       kaomoji
     end
 
     def run
-      name = "#{Config::NAME} #{self.kaomoji}"
+      kaomoji_candidates = self.kaomoji
+      kaomoji = kaomoji_candidates[rand(kaomoji_candidates.length)]
+      name = "#{Config::NAME} #{kaomoji}"
       log "Updating Twitter name to: #{name}"
       @client.update_profile(name: name)
     end

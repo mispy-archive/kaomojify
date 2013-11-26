@@ -13,12 +13,12 @@ module Kaomojify
 
     # Mapping of emotion names to kaomoji
     KAOMOJI = {
-      happy: "(o^_^)o",
-      angry: "(；￣Д￣ )",
-      sad: "o(╥﹏╥)o",
-      neutral: "<( '.' )>",
+      happy:   ["(o^_^)o", "o(^_^o)"],
+      angry:   ["(；￣Д￣ )"],
+      sad:     ["o(╥﹏╥)o", "(╥﹏╥)"],
+      neutral: ["<( '.' )>"],
 
-      unknown: "┗(･ω･;)┛"
+      unknown: ["┗(･ω･;)┛"]
     }
 
     PATH_ROOT = File.expand_path(File.dirname(__FILE__))
