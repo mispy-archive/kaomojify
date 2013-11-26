@@ -128,9 +128,7 @@ module Kaomojify
     end
 
     def run
-      kaomoji_candidates = self.kaomoji
-      kaomoji = kaomoji_candidates[rand(kaomoji_candidates.length)]
-      name = "#{Config::NAME} #{kaomoji}"
+      name = "#{Config::NAME} #{self.kaomoji.sample}"
       log "Updating Twitter name to: #{name}"
       @client.update_profile(name: name)
     end
