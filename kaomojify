@@ -75,7 +75,7 @@ module Kaomojify
       stats
     end
 
-    def kaomoji
+    def kaomojis
       # Classify the entire archive so we have a reference against which to measure
       log "Classifying tweets"
       tweets = @archive.tweets
@@ -115,20 +115,23 @@ module Kaomojify
         log "\t#{pct_change[emotion].abs.round(2)}% #{ml(pct_change[emotion])} #{emotion}"
       end
 
-      kaomoji = Config::KAOMOJI[best[0].to_sym]
+      kaomojis = Config::KAOMOJI[best[0].to_sym]
 
-      if kaomoji.nil?
-        kaomoji = Config::KAOMOJI[:unknown]
+      if kaomojis.nil?
+        kaomojis = Config::KAOMOJI[:unknown]
         log "Unfortunately, there's no kaomoji specified in config.rb for the emotion '#{best[0]}', so we're going with: unknown"
+      elsif best[1] < Config::DEVIATION_THRESHOLD*100
+        kaomojis = Config::KAOMOJI[:neutral]
+        log "As no emotion deviates more than the configured DEVIATION_THRESHOLD of #{Config::DEVIATION_THRESHOLD*100}%, we're going with: neutral"
       else
-        log "We believe this is best represented by: #{best[0].to_sym}"
+        log "The dominant emotion appears to be: #{best[0].to_sym}"
       end
 
-      kaomoji
+      kaomojis
     end
 
     def run
-      name = "#{Config::NAME} #{self.kaomoji.sample}"
+      name = "#{Config::NAME} #{self.kaomojis.sample}"
       log "Updating Twitter name to: #{name}"
       @client.update_profile(name: name)
     end

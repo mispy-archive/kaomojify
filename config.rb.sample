@@ -13,13 +13,19 @@ module Kaomojify
 
     # Mapping of emotion names to kaomoji
     KAOMOJI = {
-      happy:   ["(o^_^)o", "o(^_^o)"],
-      angry:   ["(；￣Д￣ )"],
-      sad:     ["o(╥﹏╥)o", "(╥﹏╥)"],
-      neutral: ["<( '.' )>"],
-
-      unknown: ["┗(･ω･;)┛"]
+      happy:   ["(o^_^)o", "o(^_^o)", "(★^O^★)"],
+      angry:   ["(◣_◢)", "(*≧m≦*)", "(¬､¬)", "o(≧o≦)o"],
+      sad:     ["o(╥﹏╥)o", "(╥﹏╥)", "(✖╭╮✖)", "(T.T;)"],
     }
+
+    # Unknown kaomoji will be used if there's insufficient
+    # data to analyse emotional state
+    KAOMOJI[:unknown] = ["┗(･ω･;)┛", "(•ิ_•ิ)?"]
+
+    # If no emotion deviates more than DEVIATION_THRESHOLD
+    # from the average, we will use the "neutral" kaomoji
+    DEVIATION_THRESHOLD = 0.05
+    KAOMOJI[:neutral] = ["(｡･･｡)", "(｡^^｡)"]
 
     PATH_ROOT = File.expand_path(File.dirname(__FILE__))
     PATH_EMOTIONS = File.join(PATH_ROOT, "emotions.tsv")
