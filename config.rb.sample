@@ -13,9 +13,13 @@ module Kaomojify
 
     # Mapping of emotion names to kaomoji
     KAOMOJI = {
-      happy:   ["(o^_^)o", "o(^_^o)", "(★^O^★)"],
+      happy:   ["(o^_^)o", "o(^_^o)"],
       angry:   ["(◣_◢)", "(*≧m≦*)", "(¬､¬)", "o(≧o≦)o"],
-      sad:     ["o(╥﹏╥)o", "(╥﹏╥)", "(✖╭╮✖)", "(T.T;)"],
+      sad:     ["o(╥﹏╥)o", "(╥﹏╥)", "(T.T;)"],
+      loving:  ["(✿ ♥‿♥)", "✿♥‿♥✿"],
+      excited: ["Ｏ(≧▽≦)Ｏ", "(ﾉ≧∀≦)ﾉ"],
+      silly:   ["（・∀・）", "(●´艸`)"],
+      technical: ["φ(．．)", "φ(^ω^*)ﾉ"]
     }
 
     # Unknown kaomoji will be used if there's insufficient
