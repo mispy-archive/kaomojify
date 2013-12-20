@@ -8,8 +8,8 @@ require 'twitter_ebooks'
 require_relative 'config'
 
 def log(*args)
-  STDERR.puts args.map(&:to_s).join(' ')
-  STDERR.flush
+  STDOUT.puts args.map(&:to_s).join(' ')
+  STDOUT.flush
 end
 
 module Kaomojify
