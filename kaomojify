@@ -58,6 +58,7 @@ module Kaomojify
       tweets.each do |tweet|
         line = Ebooks::NLP.normalize(tweet[:text])
         next if line.start_with?('RT') # Ignore retweets
+        next if defined?(Config::IGNORE_QUOTES) && Config::IGNORE_QUOTES && (line.start_with?('MT') || line.start_with?('QT')) # Ignore quotes, if set in config.rb.
         scores = @classifier.guess(line).sort do |x,y|
           y[1] <=> x[1]
         end

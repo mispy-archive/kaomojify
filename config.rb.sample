@@ -34,5 +34,8 @@ module Kaomojify
     PATH_ROOT = File.expand_path(File.dirname(__FILE__))
     PATH_EMOTIONS = File.join(PATH_ROOT, "emotions.tsv")
     PATH_CORPUS = File.join(PATH_ROOT, "#{USERNAME}.json")
+
+    # If set, ignore tweets that begin with MT/QT.
+    IGNORE_QUOTES = false
   end
 end
