@@ -30,7 +30,13 @@ module Kaomojify
     end
 
     def sync
+      if @archive.tweets.nil?
+        totaltweets = 0
+      else
+        totaltweets = @archive.tweets.length
+      end
       @archive.sync
+      @newtweets = @archive.tweets.length - totaltweets
     end
 
     # Builds a Bayes classifier and trains it on PATH_EMOTIONS
@@ -80,10 +86,19 @@ module Kaomojify
       # Classify the entire archive so we have a reference against which to measure
       log "Classifying tweets"
       tweets = @archive.tweets
-      overall_stats = classify(tweets)
 
-      # Classify the last 100 tweets and compare them to norm
-      recent_tweets = tweets[0..99]
+      if defined?(Config::USE_ONLY_NEW_TWEETS) && Config::USE_ONLY_NEW_TWEETS 
+        if @newtweets == 0
+          log "As there are no new tweets, we're going with: neutral"
+          return Config::KAOMOJI[:neutral]
+        end
+        recent_tweets = tweets[0..@newtweets-1]
+      else
+        # Classify the last 100 tweets and compare them to norm
+        recent_tweets = tweets[0..99]
+      end
+
+      overall_stats = classify(tweets)
       recent_stats = classify(recent_tweets)
 
       if recent_stats[:total] == 0.0
