@@ -37,5 +37,8 @@ module Kaomojify
 
     # If set, ignore tweets that begin with MT/QT.
     IGNORE_QUOTES = false
+
+    # If false, use the last 100 tweets. If true, use the tweets obtained in the most recent sync. If there are no such tweets, assume a neutral emotion.
+    USE_ONLY_NEW_TWEETS = false
   end
 end
