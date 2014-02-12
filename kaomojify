@@ -132,7 +132,16 @@ module Kaomojify
     end
 
     def run
-      name = "#{Config::NAME} #{self.kaomojis.sample}"
+      if Config::NAME.length >= 20
+        raise "Display name ('#{Config::NAME}') too long."
+      end
+
+      kaomojis = self.kaomojis.keep_if { |value| "#{Config::NAME} #{value}".length <= 20 }
+      if kaomojis.empty?
+        raise "No kaomoji fit within size constraints for the current display name and emotion."
+      end
+
+      name = "#{Config::NAME} #{kaomojis.sample}"
       log "Updating Twitter name to: #{name}"
       @client.update_profile(name: name)
     end
